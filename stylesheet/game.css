@@ -91,10 +91,32 @@ main > button {
     font-weight: 600;
 }
 
-#grid .explored {
-    background-color: #cbb918;
+
+#grid .explored{
+    background-color: #cbb918; 
 }
 
 #grid .selected {
     background-color: #6bcb18;
+}
+
+#keyboard{
+    margin-top:2.5em;
+}
+#keyboard > div {
+    display: flex;
+    justify-content: center;
+}
+.key {
+    height: 2.5em;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+    background-color: #333;
+    margin: 0.2em;
+    display: grid;
+    place-items: center;
+}
+
+#keyboard .explored{
+    background-color: #555; 
 }

@@ -11,6 +11,7 @@ fetch("./scripts/word.json")
   .then((data) => {
     jsonData = data;
     frontEndGridGenerator();
+    keyBoard();
   });
 document.getElementById("submit").onclick = checkWord;
 
@@ -18,37 +19,36 @@ overlay.onclick = function () {
   overlay.classList.add("hidden");
 };
 var alphabet = [
-  "A",
-  "B",
-  "C",
-  "D",
+  "Q",
+  "W",
   "E",
+  "R",
+  "T",
+  "Y",
+  "U",
+  "I",
+  "O",
+  "P",
+  "A",
+  "S",
+  "D",
   "F",
   "G",
   "H",
-  "I",
   "J",
   "K",
   "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
   "Z",
+  "X",
+  "C",
+  "V",
+  "B",
+  "N",
+  "M",
 ];
 
 //************************Point Calculation********************//
 var keyStroke = 0;
-
 
 //**********************Filling Up Grid*******************************
 var grid = [];
@@ -58,36 +58,44 @@ var generatedGrid = [];
 var rows = 5;
 var cols = 5;
 function gridGeneratorHelper(i, j, word, k) {
-  var ans;
   if (k == word.length) {
     return true;
   }
   if (i < 0 || i >= 5 || j < 0 || j >= 5) return false;
-  if (generatedGrid[i][j] == word[k]) {
-    ans =
-      gridGeneratorHelper(i + 1, j, word, k + 1) ||
-      gridGeneratorHelper(i - 1, j, word, k + 1) ||
-      gridGeneratorHelper(i, j + 1, word, k + 1) ||
-      gridGeneratorHelper(i, j - 1, word, k + 1);
-  }
-  if (visited[i][j] != 0) {
+  // if (generatedGrid[i][j] == word[k]) {
+  //   var ans =
+  //     gridGeneratorHelper(i + 1, j, word, k + 1) ||
+  //     gridGeneratorHelper(i - 1, j, word, k + 1) ||
+  //     gridGeneratorHelper(i, j + 1, word, k + 1) ||
+  //     gridGeneratorHelper(i, j - 1, word, k + 1);
+  // }
+  if (visited[i][j] == 1) {
     return false;
   }
+
   generatedGrid[i][j] = word[k];
   visited[i][j] = 1;
-  ans =
+  var ans =
     gridGeneratorHelper(i + 1, j, word, k + 1) ||
     gridGeneratorHelper(i - 1, j, word, k + 1) ||
     gridGeneratorHelper(i, j + 1, word, k + 1) ||
     gridGeneratorHelper(i, j - 1, word, k + 1);
-  visited[i][j] = 0;
+
+  if (ans == false) {
+    visited[i][j] = 0;
+  }
+
+  //generatedGrid[i][j]="*";
   return ans;
 }
 
 function putWordInGrid(word) {
   var index_i = Math.floor(Math.random() * 5);
   var index_j = Math.floor(Math.random() * 5);
-  return gridGeneratorHelper(index_i, index_j, word, 0);
+  if (generatedGrid[index_i][index_j] == "*") {
+    return gridGeneratorHelper(index_i, index_j, word, 0);
+  }
+  return false;
 }
 
 function generateGrid() {
@@ -104,11 +112,13 @@ function generateGrid() {
   }
   var i = 0;
   console.log(jsonData.words);
-  while (i <= 3) {
+  while (i <= 2) {
     var random_index = Math.floor(Math.random() * 2285);
     var word = jsonData.words[random_index];
-    if (putWordInGrid(word.toUpperCase())) {
+    // console.log(word);
+    if (putWordInGrid(word.toUpperCase()) == true) {
       i = i + 1;
+      console.log(word);
     }
   }
   for (var i = 0; i < 5; ++i) {
@@ -141,8 +151,48 @@ function frontEndGridGenerator() {
   }
 }
 
+var keyMap = new Map();
+var keyboardView = document.getElementById("keyboard");
+function keyBoard() {
+  var keyCount = [10, 9, 7];
+  var pos = 0;
+  for (let i = 0; i < 3; ++i) {
+    for (let j = 0; j < keyCount[i]; ++j) {
+      var key = document.createElement("div");
+      key.classList.add("key");
+      key.innerText = alphabet[pos];
+      key.value = alphabet[pos];
+      ++pos;
+      keyboardView.children[i].appendChild(key);
+      keyMap.set(key.value, key);
+    }
+  }
+}
+
+// var keys = [];
+// function keyBoard()
+// {
+//   for (let i = 1; i < 3; ++i) {
+//     var row = [];
+//     for (let j = 1; j <= 13; ++j) {
+//       var box = document.createElement("div");
+//       //   var randomNumber = Math.floor(Math.random() * 26 + 65);
+//       //   box.value = String.fromCharCode(randomNumber);
+//       box.innerText= "A";
+//       box.onclick = handleClick;
+//       box.row = i;
+//       box.col = j;
+//       box.explored = false;
+//       row.push(box);
+//       gridView.appendChild(box);
+//     }
+//     keys.push(row);
+//   }
+// }
+
 document.addEventListener("keypress", function (e) {
   var pressedKey = e.key.toUpperCase();
+  keyMap.get(pressedKey).classList.add("explored");
   for (let i = 0; i < 5; ++i) {
     for (let j = 0; j < 5; ++j) {
       console.log(pressedKey);
@@ -152,6 +202,15 @@ document.addEventListener("keypress", function (e) {
       }
     }
   }
+  // for(let i = 0;i<2;++i)
+  // {
+  //   for(let j = 0; j<=13;++j)
+  //   {
+  //     if(keys[i][j].innerText === pressedKey){
+  //         keys[i][j].classList.add("explored");
+  //     }
+  //   }
+  // }
 });
 
 //********************Checking Solution****************************/
