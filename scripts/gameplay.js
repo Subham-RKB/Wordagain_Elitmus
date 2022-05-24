@@ -2,22 +2,17 @@ const overlay = document.getElementById("overlay");
 const notification = document.getElementById("notification");
 const gridView = document.getElementById("grid");
 
-// *************************** Fetching The Dictionary ****************************//
+var grid = [];
+var generatedGrid = [];
+var visited = [];
+var rows = 5;
+var cols = 5;
 var jsonData = [];
-fetch("./scripts/word.json")
-  .then((response) => {
-    return response.json();
-  })
-  .then((data) => {
-    jsonData = data;
-    frontEndGridGenerator();
-    keyBoard();
-  });
-document.getElementById("submit").onclick = checkWord;
-
-overlay.onclick = function () {
-  overlay.classList.add("hidden");
-};
+var index = [];
+var selected = [];
+var submittedWord = [];
+var lastRow = -1;
+var lastCol = -1;
 var alphabet = [
   "Q",
   "W",
@@ -47,16 +42,43 @@ var alphabet = [
   "M",
 ];
 
+setInterval(function(){
+  generateGrid();
+  window.localStorage.setItem('generatedGrid', JSON.stringify(generatedGrid));
+}, 24*60*60*1000);
+
+// *************************** Fetching The Dictionary ****************************//
+
+fetch("./scripts/word.json")
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    jsonData = data;
+    initLocalStorage();
+    keyBoard();
+  });
+document.getElementById("submit").onclick = checkWord;
+overlay.onclick = function () {
+  overlay.classList.add("hidden");
+};
+
+function initLocalStorage() {
+  var oldGrid = JSON.parse(window.localStorage.getItem('generatedGrid'));
+  //console.log(oldGrid[1]);
+  if (!oldGrid) {
+    frontEndGridGenerator(generatedGrid);
+    window.localStorage.setItem('generatedGrid', JSON.stringify(generatedGrid));
+  } else {
+    frontEndGridGenerator(oldGrid);
+  } 
+}
+
 //************************Point Calculation********************//
 var keyStroke = 0;
 
 //**********************Filling Up Grid*******************************
-var grid = [];
-var generatedGrid = [];
-var visited = [];
-var generatedGrid = [];
-var rows = 5;
-var cols = 5;
+
 function gridGeneratorHelper(i, j, word, k) {
   if (k == word.length) {
     return true;
@@ -101,7 +123,7 @@ function generateGrid() {
     visited.push(matrix2);
   }
   var i = 0;
-  console.log(jsonData.words);
+  //console.log(jsonData.words);
   while (i <= 2) {
     var random_index = Math.floor(Math.random() * 2285);
     var word = jsonData.words[random_index];
@@ -119,9 +141,9 @@ function generateGrid() {
   }
 }
 
-function frontEndGridGenerator() {
-  console.log(jsonData.words);
-  generateGrid();
+function frontEndGridGenerator(generatedGrid) {
+  //console.log(jsonData.words);
+  
   for (let i = 0; i < 5; ++i) {
     var row = [];
     for (let j = 0; j < 5; ++j) {
@@ -140,11 +162,11 @@ function frontEndGridGenerator() {
 function keyBoardOnclick(e) {
   var key = e.target;
   key.classList.add("explored");
+  keyStroke++;
   for (let i = 0; i < 5; ++i) {
     for (let j = 0; j < 5; ++j) {
       //console.log(key.innerText);
       if (grid[i][j].value === key.value) {
-
         grid[i][j].innerText = key.value;
         grid[i][j].classList.add("explored");
       }
@@ -172,10 +194,11 @@ function keyBoard() {
 
 document.addEventListener("keypress", function (e) {
   var pressedKey = e.key.toUpperCase();
+  keyStroke++;
   keyMap.get(pressedKey).classList.add("explored");
   for (let i = 0; i < 5; ++i) {
     for (let j = 0; j < 5; ++j) {
-      console.log(pressedKey);
+      //console.log(pressedKey);
       if (grid[i][j].value === pressedKey) {
         grid[i][j].innerText = pressedKey;
         grid[i][j].classList.add("explored");
@@ -185,20 +208,25 @@ document.addEventListener("keypress", function (e) {
 });
 
 //********************Checking Solution****************************/
-var index = [];
-var selected = [];
-var submittedWord = [];
-var lastRow = -1;
-var lastCol = -1;
 
 function checkWord(e) {
-  console.log(jsonData.words);
+  //console.log(jsonData.words);
   //var box = e.target;
   var word = submittedWord.join("").toLowerCase();
   if (jsonData.words.includes(word)) {
-    notify("You Got The Point.");
+    var point = word.length - keyStroke;
+    if (point < 0) {
+      point = 3;
+    }
+    notify(
+      "You found the word " +
+        word.toUpperCase() +
+        " and scored " +
+        point +
+        " points."
+    );
   } else {
-    console.log(selected);
+    //console.log(selected);
     index = [];
     for (var i = 0; i < selected.length; ++i) {
       selected[i].classList.remove("selected");
@@ -214,7 +242,7 @@ function handleClick(e) {
   var box = e.target;
   var br = box.row;
   var bc = box.col;
-  console.log(box.value);
+  //console.log(box.value);
   if (index.length == 0) {
     lastRow = br;
     lastCol = bc;
