@@ -42,7 +42,7 @@ var alphabet = [
   "M",
 ];
 
-generateGrid();
+//generateGrid();
 setInterval(function(){
   generateGrid();
   window.localStorage.setItem('generatedGrid', JSON.stringify(generatedGrid));
@@ -56,6 +56,7 @@ fetch("./scripts/word.json")
   })
   .then((data) => {
     jsonData = data;
+    generateGrid();
     initLocalStorage();
     keyBoard();
   });
