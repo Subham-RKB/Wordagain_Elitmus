@@ -42,6 +42,7 @@ var alphabet = [
   "M",
 ];
 
+generateGrid();
 setInterval(function(){
   generateGrid();
   window.localStorage.setItem('generatedGrid', JSON.stringify(generatedGrid));
